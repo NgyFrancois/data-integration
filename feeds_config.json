@@ -1,0 +1,43 @@
+{
+    "topics": {
+      "TRANSACTIONS_STREAM": {
+        "storage_mode": "append"
+      },
+      "TOTAL_PAR_TRANSACTION_TYPE": {
+        "storage_mode": "append"
+      },
+      "TRANSACTION_STATUS_EVOLUTION": {
+        "storage_mode": "append"
+      },
+      "ALL_TRANSACTIONS": {
+        "storage_mode": "append"
+      },
+      "TOTAL_TRANSACTION_AMOUNT_PER_PAYMENT_METHOD": {
+        "storage_mode": "overwrite"
+      },
+      "COUNT_NUMB_BUY_PER_PRODUCT": {
+        "storage_mode": "overwrite"
+      },
+      "ALL_TRANSACTIONS_FLATTENED": {
+        "storage_mode": "append"
+      },
+      "ALL_TRANSACTIONS_ANONYMIZED": {
+        "storage_mode": "append"
+      },
+      "TRANSACTIONS_CONVERTED": {
+        "storage_mode": "append"
+      },
+      "TRANSACTIONS_CONVERTED_CLEANED": {
+        "storage_mode": "append"
+      },
+      "AMOUNT_PER_TYPE_WINDOWED": {
+        "storage_mode": "overwrite"
+      },
+      "TOTAL_SPENT_PER_USER_TRANSACTION_TYPE": {
+        "storage_mode": "overwrite"
+      },
+      "TRANSACTIONS_CANCELLED": {
+        "storage_mode": "append"
+      }
+    }
+  }
