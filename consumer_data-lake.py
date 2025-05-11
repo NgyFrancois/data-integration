@@ -1,7 +1,9 @@
 from kafka import KafkaConsumer
 import json
 import os
-from datetime import datetime
+import shutil
+from datetime import datetime, timedelta
+
 
 # Fonction pour désérialiser les messages JSON
 def json_deserializer(data):
@@ -26,6 +28,21 @@ def write_to_data_lake(topic_name, message_value):
     with open(file_path, 'a', encoding='utf-8') as f:
         json.dump(message_value, f, ensure_ascii=False)
         f.write('\n')  # Un message JSON par ligne
+
+def purge_old_data_lake(base_path='data_lake', retention_days=30):
+    threshold_date = datetime.now() - timedelta(days=retention_days)
+    for topic in os.listdir(base_path):
+        topic_path = os.path.join(base_path, topic)
+        if os.path.isdir(topic_path):
+            for folder in os.listdir(topic_path):
+                folder_path = os.path.join(topic_path, folder)
+                try:
+                    folder_date = datetime.strptime(folder, "%Y-%m-%d")
+                    if folder_date < threshold_date:
+                        shutil.rmtree(folder_path)
+                        print(f"Supprimé: {folder_path}")
+                except ValueError:
+                    pass  # Dossier non conforme
 
 if __name__ == '__main__':
     # Créer un Kafka Consumer

@@ -15,6 +15,16 @@ def connect_mysql():
         database='data_warehouse'
     )
 
+# Vérifie si l'utilisateur a le droit d'écrire sur un topic donné
+def check_write_permission(cursor, user_id, topic_name):
+    query = """
+        SELECT can_write FROM data_lake_permissions
+        WHERE user_id = %s AND topic_name = %s
+    """
+    cursor.execute(query, (user_id, topic_name))
+    result = cursor.fetchone()
+    return result is not None and result[0] == 1
+
 # Fonction d'insertion dynamique par topic
 def insert_data(cursor, topic, data, key):
     if topic == "TOTAL_TRANSACTION_AMOUNT_PER_PAYMENT_METHOD":
@@ -43,7 +53,6 @@ def insert_data(cursor, topic, data, key):
             VALUES (%s, %s)
             ON DUPLICATE KEY UPDATE total_spent = VALUES(total_spent)
         """
-        # On décode et découpe la clé composite "user_id_hashed-transaction_type"
         decode = key.decode('utf-8')
         parts = decode.rsplit('-', 1)
         values = (parts[1], data['total_spent'])
@@ -78,11 +87,11 @@ def insert_data(cursor, topic, data, key):
 
     cursor.execute(query, values)
 
+# Main
 if __name__ == '__main__':
     db = connect_mysql()
     cursor = db.cursor()
 
-    # Liste des topics Kafka que tu consommes
     topics = [
         "TOTAL_TRANSACTION_AMOUNT_PER_PAYMENT_METHOD",
         "COUNT_NUMB_BUY_PER_PRODUCT",
@@ -105,12 +114,19 @@ if __name__ == '__main__':
         topic = message.topic
         key = message.key
         data = message.value
+
         try:
-            #nsert_data(cursor, topic, data)
-            #db.commit()
-            #print(f"[{topic}] Inséré : {data}")
-            print(f"Reçu depuis {topic} : {data} ,, {key}")
+            # Extraction du user_id (à adapter selon la structure exacte)
+            user_id = data.get("user_id", "UNKNOWN")
+
+            if not check_write_permission(cursor, user_id, topic):
+                print(f"Permission refusée pour {user_id} sur le topic {topic}")
+                continue
+
             insert_data(cursor, topic, data, key)
+            db.commit()
+            print(f"Inséré : [{topic}] {data}")
+
         except Exception as e:
             print(f"Erreur pour topic {topic} : {e}")
             db.rollback()
